@@ -1,0 +1,15 @@
+.env
+
+# Local settings
+.claude/settings.local.json
+
+# Generated content
+output/
+tmp/
+
+# Personal photo references
+assets/me/
+
+# Python cache
+__pycache__/
+*.pyc
