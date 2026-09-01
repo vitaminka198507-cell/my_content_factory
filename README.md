@@ -1,64 +1,64 @@
 # Content Factory
 
-Content Factory is a local content-production assistant for preparing posts and visual briefs for Telegram, VK, and Instagram.
+Content Factory — локальный ассистент для подготовки контента: постов, visual brief и материалов для Telegram, VK и Instagram.
 
-The project stores a personal knowledge base, tone-of-voice rules, content workflows, and helper scripts that turn a topic into platform-specific drafts and Instagram carousel assets.
+Проект хранит персональную базу знаний, правила tone of voice, контентные workflow и вспомогательные скрипты, которые превращают тему в готовые материалы для разных площадок.
 
-## What It Does
+## Что умеет
 
-- Creates adapted posts for Telegram, VK, and Instagram.
-- Uses a local knowledge base for positioning, audience, tone of voice, content rules, and brand style.
-- Generates visual briefs for image creation.
-- Renders Instagram carousel slides from structured JSON.
-- Keeps publication manual: the project prepares files, but does not publish to social networks.
+- Создает адаптированные посты для Telegram, VK и Instagram.
+- Использует локальную базу знаний: позиционирование, аудиторию, tone of voice, правила контента и фирменный стиль.
+- Генерирует visual brief для создания обложки или изображения к посту.
+- Рендерит слайды Instagram-карусели из структурированного JSON.
+- Оставляет публикацию ручной: проект готовит файлы, но не публикует их в соцсети.
 
-## Project Structure
+## Структура проекта
 
 ```text
 content_agent/
-├── CLAUDE.md        # Main agent instructions and project workflow
-├── .claude/         # Local agents and content-maker skill
-├── knowledge/       # Personal knowledge base and content rules
-├── scripts/         # Automation scripts for images and carousels
-├── assets/fonts/    # Fonts used for carousel rendering
-├── draft/           # Working drafts and content ideas
-├── output/          # Generated content, ignored by git
-└── tmp/             # Temporary local files, ignored by git
+├── CLAUDE.md        # Основные инструкции агента и workflow проекта
+├── .claude/         # Локальные агенты и content-maker skill
+├── knowledge/       # База знаний и правила контента
+├── scripts/         # Скрипты автоматизации для изображений и каруселей
+├── assets/fonts/    # Шрифты для рендера каруселей
+├── draft/           # Черновики и идеи контента
+├── output/          # Сгенерированный контент, игнорируется git
+└── tmp/             # Временные локальные файлы, игнорируются git
 ```
 
-## Private And Local Files
+## Приватные и локальные файлы
 
-The repository intentionally ignores local-only and personal materials:
+Репозиторий намеренно игнорирует локальные и персональные материалы:
 
 - `.env`
 - `.claude/settings.local.json`
 - `assets/me/`
 - `output/`
 - `tmp/`
-- Python cache files
+- файлы Python cache
 
-This keeps secrets, personal photo references, temporary files, and generated examples out of GitHub.
+Так секреты, личные фото-референсы, временные файлы и сгенерированные примеры не попадают на GitHub.
 
-## Current Status
+## Текущий статус
 
-The current version is a working local content pipeline. The next development step is to use this web/local version as the base for a desktop application.
+Текущая версия — рабочий локальный content pipeline. Следующий возможный этап развития — использовать эту web/local-версию как основу для desktop-приложения.
 
-## Local Web Interface
+## Локальный web-интерфейс
 
-Run the local demo interface:
+Запуск локального demo-интерфейса:
 
 ```bash
 python3 web_app.py
 ```
 
-Then open:
+После запуска открыть:
 
 ```text
 http://127.0.0.1:8000
 ```
 
-The page lets a user enter a content request, watch the generation progress, and open the local result folder when the work is done.
+На странице можно ввести запрос на создание контента, увидеть процесс генерации и открыть локальную папку с результатом после завершения работы.
 
-## Safety Rules
+## Правила безопасности
 
-The assistant prepares content files only. It must not publish posts, delete project files, overwrite generated assets, or perform external actions without explicit user approval.
+Ассистент только готовит файлы с контентом. Он не должен публиковать посты, удалять файлы проекта, перезаписывать сгенерированные материалы или выполнять внешние действия без явного разрешения пользователя.
