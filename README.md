@@ -43,6 +43,22 @@ This keeps secrets, personal photo references, temporary files, and generated ex
 
 The current version is a working local content pipeline. The next development step is to use this web/local version as the base for a desktop application.
 
+## Local Web Interface
+
+Run the local demo interface:
+
+```bash
+python3 web_app.py
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8000
+```
+
+The page lets a user enter a content request, watch the generation progress, and open the local result folder when the work is done.
+
 ## Safety Rules
 
 The assistant prepares content files only. It must not publish posts, delete project files, overwrite generated assets, or perform external actions without explicit user approval.

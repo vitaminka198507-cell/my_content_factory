@@ -114,6 +114,7 @@ def generate_image(
         filename += ".png"
 
     output_path = OUTPUT_DIR / filename
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Не перезаписываем существующий файл
     if output_path.exists():

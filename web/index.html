@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Content Factory</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f5f0;
+      --panel: #ffffff;
+      --ink: #242424;
+      --muted: #6f6a60;
+      --line: #ddd6ca;
+      --accent: #246b5b;
+      --accent-dark: #17483e;
+      --soft: #edf5f2;
+      --danger: #9b2f2f;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      width: min(1040px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 40px 0;
+    }
+
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(32px, 5vw, 58px);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .status {
+      min-width: 128px;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 16px;
+    }
+
+    .composer,
+    .log,
+    .result {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .composer {
+      padding: 16px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 130px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px 16px;
+      color: var(--ink);
+      font: inherit;
+      font-size: 17px;
+      line-height: 1.45;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(36, 107, 91, 0.12);
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    button {
+      min-height: 44px;
+      border: 0;
+      border-radius: 8px;
+      padding: 0 18px;
+      background: var(--accent);
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: var(--accent-dark);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    .hint {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .log {
+      min-height: 320px;
+      padding: 18px;
+      overflow: auto;
+    }
+
+    .log-line {
+      display: flex;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee8de;
+      color: var(--ink);
+      line-height: 1.45;
+    }
+
+    .log-line:last-child {
+      border-bottom: 0;
+    }
+
+    .time {
+      flex: 0 0 auto;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .error {
+      color: var(--danger);
+    }
+
+    .result {
+      display: none;
+      padding: 18px;
+      background: var(--soft);
+    }
+
+    .result.visible {
+      display: block;
+    }
+
+    .result-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .path {
+      min-width: 0;
+      color: var(--accent-dark);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 720px) {
+      main {
+        width: min(100vw - 24px, 1040px);
+        padding: 24px 0;
+      }
+
+      header,
+      .actions,
+      .result-row {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .status {
+        text-align: left;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Content Factory</h1>
+      <div class="status" id="status">Готов к работе</div>
+    </header>
+
+    <section class="workspace">
+      <form class="composer" id="form">
+        <textarea id="request" placeholder="Напиши пост про то, как предпринимателю понять, где ИИ действительно поможет в работе"></textarea>
+        <div class="actions">
+          <p class="hint">Результаты сохраняются локально в папку output/web.</p>
+          <button id="submit" type="submit">Создать контент</button>
+        </div>
+      </form>
+
+      <section class="log" id="log" aria-live="polite"></section>
+
+      <section class="result" id="result">
+        <div class="result-row">
+          <div>
+            <strong>Готово</strong>
+            <div class="path" id="resultPath"></div>
+          </div>
+          <button id="openFolder" type="button">Открыть папку с результатом</button>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const form = document.querySelector("#form");
+    const request = document.querySelector("#request");
+    const submit = document.querySelector("#submit");
+    const log = document.querySelector("#log");
+    const status = document.querySelector("#status");
+    const result = document.querySelector("#result");
+    const resultPath = document.querySelector("#resultPath");
+    const openFolder = document.querySelector("#openFolder");
+    let currentOutputPath = "";
+
+    function stamp() {
+      return new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    }
+
+    function addLog(message, isError = false) {
+      const row = document.createElement("div");
+      row.className = `log-line${isError ? " error" : ""}`;
+      row.innerHTML = `<span class="time">${stamp()}</span><span>${message}</span>`;
+      log.appendChild(row);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    async function readStream(response) {
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop();
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          const event = JSON.parse(line);
+          if (event.type === "log") addLog(event.message);
+          if (event.type === "error") addLog(event.message, true);
+          if (event.type === "done") {
+            currentOutputPath = event.result.output_dir;
+            resultPath.textContent = currentOutputPath;
+            result.classList.add("visible");
+            status.textContent = "Готово";
+          }
+        }
+      }
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const text = request.value.trim();
+      if (!text) {
+        addLog("Введите запрос перед запуском.", true);
+        return;
+      }
+
+      submit.disabled = true;
+      result.classList.remove("visible");
+      currentOutputPath = "";
+      log.innerHTML = "";
+      status.textContent = "Работаю";
+      addLog("Запускаю Content Factory...");
+
+      try {
+        const response = await fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ request: text }),
+        });
+
+        if (!response.ok) {
+          const payload = await response.json();
+          throw new Error(payload.error || "Не удалось запустить генерацию.");
+        }
+
+        await readStream(response);
+      } catch (error) {
+        status.textContent = "Ошибка";
+        addLog(error.message, true);
+      } finally {
+        submit.disabled = false;
+      }
+    });
+
+    openFolder.addEventListener("click", async () => {
+      if (!currentOutputPath) return;
+      await fetch("/api/open-folder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path: currentOutputPath }),
+      });
+    });
+  </script>
+</body>
+</html>
