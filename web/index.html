@@ -234,7 +234,7 @@
             <strong>Готово</strong>
             <div class="path" id="resultPath"></div>
           </div>
-          <button id="openFolder" type="button">Открыть папку с результатом</button>
+          <button id="openFolder" type="button">Посмотреть результат в браузере</button>
         </div>
       </section>
     </section>
@@ -250,6 +250,7 @@
     const resultPath = document.querySelector("#resultPath");
     const openFolder = document.querySelector("#openFolder");
     let currentOutputPath = "";
+    let currentResultUrl = "";
 
     function stamp() {
       return new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
@@ -283,6 +284,7 @@
           if (event.type === "error") addLog(event.message, true);
           if (event.type === "done") {
             currentOutputPath = event.result.output_dir;
+            currentResultUrl = event.result.result_url;
             resultPath.textContent = currentOutputPath;
             result.classList.add("visible");
             status.textContent = "Готово";
@@ -302,6 +304,7 @@
       submit.disabled = true;
       result.classList.remove("visible");
       currentOutputPath = "";
+      currentResultUrl = "";
       log.innerHTML = "";
       status.textContent = "Работаю";
       addLog("Запускаю Content Factory...");
@@ -328,12 +331,8 @@
     });
 
     openFolder.addEventListener("click", async () => {
-      if (!currentOutputPath) return;
-      await fetch("/api/open-folder", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ path: currentOutputPath }),
-      });
+      if (!currentResultUrl) return;
+      window.open(currentResultUrl, "_blank", "noopener");
     });
   </script>
 </body>

@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 
 import json
+import mimetypes
 import os
 import re
 import subprocess
 import time
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from html import escape
 from pathlib import Path
+from urllib.parse import quote, unquote, urlparse
 
 from openai import OpenAI
 
@@ -62,6 +65,11 @@ def load_project_env() -> None:
 def slugify(text: str) -> str:
     slug = re.sub(r"[^a-zA-Z0-9а-яА-ЯёЁ]+", "-", text.lower()).strip("-")
     return slug[:70] or "content"
+
+
+def result_url(output_dir: Path) -> str:
+    relative_path = output_dir.resolve().relative_to(OUTPUT_ROOT.resolve())
+    return "/results/" + quote(relative_path.as_posix()) + "/"
 
 
 def read_knowledge() -> str:
@@ -149,6 +157,7 @@ def save_result(user_request: str, data: dict) -> dict:
 
     return {
         "output_dir": str(output_dir),
+        "result_url": result_url(output_dir),
         "instagram_json": str(posts_dir / "instagram.json"),
         "files": [
             str(posts_dir / "telegram.md"),
@@ -327,6 +336,82 @@ class ContentFactoryHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def send_bytes(self, status: int, body: bytes, content_type: str) -> None:
+        self.send_response(status)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def resolve_result_path(self, url_path: str) -> Path | None:
+        relative = unquote(url_path.removeprefix("/results/")).strip("/")
+        target = (OUTPUT_ROOT / relative).resolve()
+        output_root = OUTPUT_ROOT.resolve()
+        if target == output_root or output_root in target.parents:
+            return target
+        return None
+
+    def render_result_directory(self, directory: Path, url_path: str) -> bytes:
+        entries = sorted(directory.iterdir(), key=lambda item: (not item.is_dir(), item.name.lower()))
+        relative_title = directory.relative_to(OUTPUT_ROOT.resolve()).as_posix() or "output/web"
+        rows = []
+        if directory.resolve() != OUTPUT_ROOT.resolve():
+            parent_url = str(Path(url_path.rstrip("/")).parent).replace("\\", "/")
+            if not parent_url.startswith("/"):
+                parent_url = "/results/"
+            if not parent_url.endswith("/"):
+                parent_url += "/"
+            rows.append(f'<li><a href="{escape(parent_url)}">..</a></li>')
+
+        for entry in entries:
+            href = quote(entry.name)
+            if entry.is_dir():
+                href += "/"
+            label = escape(entry.name + ("/" if entry.is_dir() else ""))
+            rows.append(f'<li><a href="{href}">{label}</a></li>')
+
+        html = f"""<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Результат Content Factory</title>
+  <style>
+    body {{ margin: 0; background: #f7f5f0; color: #242424; font-family: Inter, system-ui, sans-serif; }}
+    main {{ width: min(920px, calc(100vw - 32px)); margin: 0 auto; padding: 36px 0; }}
+    h1 {{ margin: 0 0 8px; font-size: 32px; line-height: 1.1; letter-spacing: 0; }}
+    .path {{ margin: 0 0 24px; color: #17483e; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }}
+    ul {{ margin: 0; padding: 0; list-style: none; border: 1px solid #ddd6ca; border-radius: 8px; background: #fff; overflow: hidden; }}
+    li + li {{ border-top: 1px solid #eee8de; }}
+    a {{ display: block; padding: 14px 16px; color: #246b5b; text-decoration: none; overflow-wrap: anywhere; }}
+    a:hover {{ background: #edf5f2; color: #17483e; }}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Результат</h1>
+    <p class="path">{escape(relative_title)}</p>
+    <ul>{"".join(rows)}</ul>
+  </main>
+</body>
+</html>"""
+        return html.encode("utf-8")
+
+    def serve_result_path(self) -> None:
+        parsed = urlparse(self.path)
+        target = self.resolve_result_path(parsed.path)
+        if target is None or not target.exists():
+            self.send_error(404)
+            return
+
+        if target.is_dir():
+            body = self.render_result_directory(target, parsed.path)
+            self.send_bytes(200, body, "text/html; charset=utf-8")
+            return
+
+        content_type = mimetypes.guess_type(target.name)[0] or "application/octet-stream"
+        self.send_bytes(200, target.read_bytes(), content_type)
+
     def do_GET(self) -> None:
         if self.path == "/" or self.path.startswith("/?"):
             html = (PROJECT_ROOT / "web" / "index.html").read_bytes()
@@ -335,6 +420,10 @@ class ContentFactoryHandler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(html)))
             self.end_headers()
             self.wfile.write(html)
+            return
+
+        if self.path.startswith("/results/"):
+            self.serve_result_path()
             return
 
         self.send_error(404)
