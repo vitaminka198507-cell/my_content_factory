@@ -72,6 +72,19 @@ def result_url(output_dir: Path) -> str:
     return "/results/" + quote(relative_path.as_posix()) + "/"
 
 
+def browser_content_type(path: Path) -> str:
+    content_type = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
+    utf8_types = {
+        "application/json",
+        "application/javascript",
+        "application/xml",
+        "image/svg+xml",
+    }
+    if content_type.startswith("text/") or content_type in utf8_types:
+        return f"{content_type}; charset=utf-8"
+    return content_type
+
+
 def read_knowledge() -> str:
     blocks = []
     for relative_path in KNOWLEDGE_FILES:
@@ -410,8 +423,7 @@ class ContentFactoryHandler(BaseHTTPRequestHandler):
             self.send_bytes(200, body, "text/html; charset=utf-8")
             return
 
-        content_type = mimetypes.guess_type(target.name)[0] or "application/octet-stream"
-        self.send_bytes(200, target.read_bytes(), content_type)
+        self.send_bytes(200, target.read_bytes(), browser_content_type(target))
 
     def do_GET(self) -> None:
         if self.path == "/" or self.path.startswith("/?"):
