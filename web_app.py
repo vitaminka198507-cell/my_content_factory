@@ -89,6 +89,7 @@ def build_prompt(user_request: str, knowledge: str) -> str:
 
 Используй базу знаний ниже: позиционирование, аудиторию, tone of voice, правила контента и примеры.
 Не публикуй ничего в соцсети. Только подготовь тексты и структуру файлов.
+Для instagram.slides используй только роли: hook, context, content, conclusion, cta.
 
 Верни строго валидный JSON без markdown-обертки по схеме:
 {{

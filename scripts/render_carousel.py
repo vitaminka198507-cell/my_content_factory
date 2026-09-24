@@ -36,7 +36,7 @@ ARROW_LENGTH = 135
 ARROW_STROKE = 4
 ARROW_HEAD = 18
 
-VALID_ROLES = {"hook", "context", "content", "conclusion", "cta"}
+VALID_ROLES = {"hook", "context", "content", "conclusion", "cta", "outro", "final", "summary"}
 
 
 def load_font(filename: str, size: int) -> ImageFont.FreeTypeFont:
