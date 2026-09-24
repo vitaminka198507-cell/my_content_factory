@@ -380,7 +380,7 @@ class ContentFactoryHandler(BaseHTTPRequestHandler):
 
 def main() -> None:
     os.chdir(PROJECT_ROOT)
-    host = "127.0.0.1"
+    host = os.getenv("CONTENT_FACTORY_HOST", "0.0.0.0")
     port = int(os.getenv("CONTENT_FACTORY_PORT", "8000"))
     server = ThreadingHTTPServer((host, port), ContentFactoryHandler)
     print(f"Content Factory web UI: http://{host}:{port}")

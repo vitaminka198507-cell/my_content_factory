@@ -1,0 +1,14 @@
+services:
+  content-factory:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      CONTENT_FACTORY_HOST: 0.0.0.0
+      CONTENT_FACTORY_PORT: 8000
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    volumes:
+      - ./output:/app/output
+      - ./tmp:/app/tmp
+      - ./assets/me:/app/assets/me:ro
+    restart: unless-stopped

@@ -7,9 +7,6 @@
 output/
 tmp/
 
-# Personal photo references
-assets/me/
-
 # Python cache
 __pycache__/
 *.pyc
